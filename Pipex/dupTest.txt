@@ -1,5 +1,0 @@
-Start of execve call /usr/bin/cat:
---------------------------------------------
-Hello, World!
-This is a test input for stdin redirection.
-1234
