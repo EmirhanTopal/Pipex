@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: emtopal <emtopal@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 15:06:44 by marvin            #+#    #+#             */
-/*   Updated: 2025/03/17 15:06:44 by marvin           ###   ########.fr       */
+/*   Updated: 2025/03/18 11:54:18 by emtopal          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ static char	*check_path(char **paths, char *cmd)
 		temp_path = ft_strjoin(paths[j], "/");
 		full_path = ft_strjoin(temp_path, cmd);
 		free(temp_path);
-		if (!access(full_path, X_OK))
+		if (!access(full_path, X_OK | F_OK))
 			return (full_path);
 		free(full_path);
 		j++;
@@ -61,12 +61,18 @@ static	void	child_process(int *fd, char **argv, char **env)
 	open_fd = open(argv[1], O_RDONLY);
 	correct_path = find_path(env, cmd);
 	if (open_fd == -1)
-		return ;
+	{
+		perror("Error");
+		exit(1);
+	}
 	dup2(fd[1], STDOUT_FILENO);
 	dup2(open_fd, STDIN_FILENO);
 	close(fd[1]);
 	if (execve(correct_path, cmd, env) == -1)
-		write(1, "error execve", 13);
+	{
+		perror("Error");
+		exit(EXIT_FAILURE);
+	}
 }
 
 static	void	parent_process(int *fd, char **argv, char **env)
@@ -80,12 +86,18 @@ static	void	parent_process(int *fd, char **argv, char **env)
 	read_fd = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0777);
 	correct_path = find_path(env, cmd);
 	if (read_fd == -1)
-		return ;
+	{
+		perror("Error");
+		exit(1);
+	}
 	dup2(fd[0], STDIN_FILENO);
 	dup2(read_fd, STDOUT_FILENO);
 	close(fd[0]);
 	if (execve(correct_path, cmd, env) == -1)
-		write(1, "error execve", 13);
+	{
+		perror("Error");
+		exit(EXIT_FAILURE);
+	}
 }
 
 int	main(int argc, char **argv, char **env)
@@ -96,13 +108,21 @@ int	main(int argc, char **argv, char **env)
 	if (argc == 5)
 	{
 		if (pipe(fd) == -1)
-			write(1, "error pipe", 11);
+		{
+			perror("error");
+			exit(EXIT_FAILURE);
+		}
 		my_pid = fork();
 		if (my_pid == -1)
-			write(1, "error pid", 10);
+		{
+			perror("error");
+			exit(EXIT_FAILURE);
+		}
 		if (my_pid == 0)
 			child_process(fd, argv, env);
 		parent_process(fd, argv, env);
 	}
+	else
+		write(2, "error argument count", 21);
 	return (0);
 }
