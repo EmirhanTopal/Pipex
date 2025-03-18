@@ -5,7 +5,8 @@ RM = rm -rf
 CFLAGS = -Wall -Wextra -Werror
 FILES = pipex.c \
 	ft_utils.c \
-	ft_utils_2.c
+	ft_utils_2.c \
+	ft_process.c
 
 OBJS = $(FILES:.c=.o)
 

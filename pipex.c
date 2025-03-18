@@ -6,13 +6,19 @@
 /*   By: emtopal <emtopal@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 15:06:44 by marvin            #+#    #+#             */
-/*   Updated: 2025/03/18 11:54:18 by emtopal          ###   ########.fr       */
+/*   Updated: 2025/03/18 14:17:36 by emtopal          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static char	*check_path(char **paths, char *cmd)
+void	ft_error_and_exit(void)
+{
+	perror("Error");
+	exit(EXIT_FAILURE);
+}
+
+char	*check_path(char **paths, char *cmd)
 {
 	int		j;
 	char	*full_path;
@@ -32,7 +38,7 @@ static char	*check_path(char **paths, char *cmd)
 	return (NULL);
 }
 
-static char	*find_path(char **env, char **cmd)
+char	*find_path(char **env, char **cmd)
 {
 	int		i;
 	char	**paths;
@@ -50,77 +56,24 @@ static char	*find_path(char **env, char **cmd)
 	return (NULL);
 }
 
-static	void	child_process(int *fd, char **argv, char **env)
-{
-	int		open_fd;
-	char	**cmd;
-	char	*correct_path;
-
-	close(fd[0]);
-	cmd = ft_split(argv[2], ' ');
-	open_fd = open(argv[1], O_RDONLY);
-	correct_path = find_path(env, cmd);
-	if (open_fd == -1)
-	{
-		perror("Error");
-		exit(1);
-	}
-	dup2(fd[1], STDOUT_FILENO);
-	dup2(open_fd, STDIN_FILENO);
-	close(fd[1]);
-	if (execve(correct_path, cmd, env) == -1)
-	{
-		perror("Error");
-		exit(EXIT_FAILURE);
-	}
-}
-
-static	void	parent_process(int *fd, char **argv, char **env)
-{
-	int		read_fd;
-	char	**cmd;
-	char	*correct_path;
-
-	close(fd[1]);
-	cmd = ft_split(argv[3], ' ');
-	read_fd = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0777);
-	correct_path = find_path(env, cmd);
-	if (read_fd == -1)
-	{
-		perror("Error");
-		exit(1);
-	}
-	dup2(fd[0], STDIN_FILENO);
-	dup2(read_fd, STDOUT_FILENO);
-	close(fd[0]);
-	if (execve(correct_path, cmd, env) == -1)
-	{
-		perror("Error");
-		exit(EXIT_FAILURE);
-	}
-}
-
 int	main(int argc, char **argv, char **env)
 {
-	int	fd[2];
-	int	my_pid;
+	int		fd[2];
+	pid_t	pidc;
+	pid_t	pidp;
 
 	if (argc == 5)
 	{
+		if (argv[3][0] == '\0' || argv[2][0] == '\0')
+			ft_error_and_exit();
 		if (pipe(fd) == -1)
-		{
-			perror("error");
-			exit(EXIT_FAILURE);
-		}
-		my_pid = fork();
-		if (my_pid == -1)
-		{
-			perror("error");
-			exit(EXIT_FAILURE);
-		}
-		if (my_pid == 0)
-			child_process(fd, argv, env);
-		parent_process(fd, argv, env);
+			ft_error_and_exit();
+		pidc = child_new_process(child_process, fd, argv, env);
+		pidp = parent_new_process(parent_process, fd, argv, env);
+		close(fd[1]);
+		close(fd[0]);
+		waitpid(pidc, NULL, 0);
+		waitpid(pidp, NULL, 0);
 	}
 	else
 		write(2, "error argument count", 21);
