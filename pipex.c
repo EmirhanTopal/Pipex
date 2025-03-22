@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: emtopal <emtopal@student.42.fr>            +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 15:06:44 by marvin            #+#    #+#             */
-/*   Updated: 2025/03/18 14:17:36 by emtopal          ###   ########.fr       */
+/*   Updated: 2025/03/23 01:28:47 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ char	*check_path(char **paths, char *cmd)
 	char	*temp_path;
 
 	j = 0;
+	if (!paths || !cmd)
+		return (NULL);
 	while (paths[j])
 	{
 		temp_path = ft_strjoin(paths[j], "/");
@@ -42,6 +44,7 @@ char	*find_path(char **env, char **cmd)
 {
 	int		i;
 	char	**paths;
+	char	*full_path;
 
 	i = 0;
 	while (env[i])
@@ -49,7 +52,11 @@ char	*find_path(char **env, char **cmd)
 		if (!ft_strncmp(env[i], "PATH=", 5))
 		{
 			paths = ft_split(env[i] + 5, ':');
-			return (check_path(paths, cmd[0]));
+			full_path = check_path(paths, cmd[0]);
+			ft_db_free(paths);
+			if (!full_path)
+				return (NULL);
+			return (full_path);
 		}
 		i++;
 	}

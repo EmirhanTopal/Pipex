@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_process.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: emtopal <emtopal@student.42.fr>            +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/18 13:20:10 by emtopal           #+#    #+#             */
-/*   Updated: 2025/03/18 14:17:48 by emtopal          ###   ########.fr       */
+/*   Updated: 2025/03/23 01:14:45 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,21 +19,22 @@ void	child_process(int *fd, char **argv, char **env)
 	char	*correct_path;
 
 	close(fd[0]);
-	cmd = ft_split(argv[2], ' ');
 	open_fd = open(argv[1], O_RDONLY);
 	if (open_fd == -1)
-	{
-		perror("Error");
-		exit(EXIT_FAILURE);
-	}
+		ft_error_and_exit();
+	cmd = ft_split(argv[2], ' ');
 	correct_path = find_path(env, cmd);
+	if (!correct_path)
+	{
+		ft_db_free(cmd);
+		ft_error_and_exit();
+	}
 	dup2(fd[1], STDOUT_FILENO);
 	dup2(open_fd, STDIN_FILENO);
 	close(fd[1]);
 	if (execve(correct_path, cmd, env) == -1)
 	{
-		perror("Error");
-		exit(EXIT_FAILURE);
+		ft_error_and_exit();
 	}
 }
 
@@ -44,21 +45,22 @@ void	parent_process(int *fd, char **argv, char **env)
 	char	*correct_path;
 
 	close(fd[1]);
-	cmd = ft_split(argv[3], ' ');
 	read_fd = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0777);
-	correct_path = find_path(env, cmd);
 	if (read_fd == -1)
+		ft_error_and_exit();
+	cmd = ft_split(argv[3], ' ');
+	correct_path = find_path(env, cmd);
+	if (!correct_path)
 	{
-		perror("Error");
-		exit(EXIT_FAILURE);
+		ft_db_free(cmd);
+		ft_error_and_exit();
 	}
 	dup2(fd[0], STDIN_FILENO);
 	dup2(read_fd, STDOUT_FILENO);
 	close(fd[0]);
 	if (execve(correct_path, cmd, env) == -1)
 	{
-		perror("Error");
-		exit(EXIT_FAILURE);
+		ft_error_and_exit();
 	}
 }
 

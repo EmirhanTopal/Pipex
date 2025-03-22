@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: emtopal <emtopal@student.42.fr>            +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 15:12:41 by marvin            #+#    #+#             */
-/*   Updated: 2025/03/18 14:18:55 by emtopal          ###   ########.fr       */
+/*   Updated: 2025/03/23 01:06:27 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,5 +33,6 @@ int		parent_new_process(void (*parent_process)(int *, char **, char **),
 char	*find_path(char **env, char **cmd);
 char	*check_path(char **paths, char *cmd);
 void	ft_error_and_exit(void);
+void	ft_db_free(char **double_pointer);
 
 #endif
